@@ -2,214 +2,137 @@
 <html>
 <head>
     <title>AI Weather Clothes Recommendation</title>
-
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* ==============================
-           GENERAL PAGE STYLING
-        ===============================*/
         body {
             font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
+            margin: 0; padding: 0; height: 100vh;
             background: linear-gradient(-45deg, #4facfe, #00f2fe, #43e97b, #fdfd96);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
 
-        /* Floating clouds */
         body::after {
             content: "";
-            position: absolute;
-            top: 0; left: 0;
-            width: 200%;
-            height: 100%;
+            position: absolute; top: 0; left: 0; width: 200%; height: 100%;
             background: url('https://i.ibb.co/4pDNDk1/clouds.png') repeat-x;
-            animation: cloudMove 60s linear infinite;
-            opacity: 0.2;
-            z-index: -1;
+            animation: cloudMove 60s linear infinite; opacity: 0.2; z-index: -1;
         }
 
-        @keyframes gradientBG {
-            0% {background-position: 0% 50%;}
-            50% {background-position: 100% 50%;}
-            100% {background-position: 0% 50%;}
-        }
+        @keyframes gradientBG {0% {background-position:0% 50%;}50% {background-position:100% 50%;}100% {background-position:0% 50%;}}
+        @keyframes cloudMove {0% {transform:translateX(0);}100% {transform:translateX(-50%);}}
 
-        @keyframes cloudMove {
-            0% {transform: translateX(0);}
-            100% {transform: translateX(-50%);}
-        }
-
-        /* ==============================
-           CARD / CONTAINER
-        ===============================*/
         #container {
-            max-width: 550px;
-            padding: 25px;
-            margin: 80px auto;
-            background: rgba(255, 255, 255, 0.25);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            animation: fadeIn 0.8s ease-in-out;
-            position: relative;
-            z-index: 1;
+            max-width: 550px; padding: 25px; margin: 80px auto;
+            background: rgba(255,255,255,0.25); border-radius:15px; backdrop-filter: blur(10px);
+            box-shadow:0 8px 20px rgba(0,0,0,0.2); animation: fadeIn 0.8s ease-in-out; position: relative; z-index:1;
         }
 
-        /* ==============================
-           TEXT + INPUTS
-        ===============================*/
-        h2 {
-            text-align: center;
-            color: white;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            font-size: 16px;
-            margin-bottom: 10px;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(90deg, #ff758c 0%, #ff7eb3 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 17px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.03);
-            box-shadow: 0 5px 15px rgba(255, 118, 140, 0.5);
-        }
-
-        pre {
-            background: rgba(255, 255, 255, 0.4);
-            padding: 15px;
-            border-radius: 10px;
-            white-space: pre-wrap;
-            font-size: 15px;
-            color: #00394f;
-            font-weight: 500;
-        }
-
-        /* ==============================
-           ANIMATIONS
-        ===============================*/
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        h2 { text-align:center; color:white; margin-bottom:15px; font-weight:600; }
+        input { width:100%; padding:12px; border-radius:10px; border:none; font-size:16px; margin-bottom:10px; outline:none; }
+        button { width:100%; padding:12px; background:linear-gradient(90deg,#ff758c 0%,#ff7eb3 100%); color:white;
+                 border:none; border-radius:10px; font-size:17px; cursor:pointer; font-weight:600; transition:0.3s; }
+        button:hover { transform:scale(1.03); box-shadow:0 5px 15px rgba(255,118,140,0.5); }
+        pre { background: rgba(255,255,255,0.4); padding:15px; border-radius:10px; white-space:pre-wrap; font-size:15px; color:#00394f; font-weight:500; }
+        @keyframes fadeIn { from{opacity:0; transform:translateY(30px);} to{opacity:1; transform:translateY(0);} }
     </style>
 </head>
-
 <body>
 
 <div id="container">
     <h2>🌦 AI Weather-Based Clothes Recommendation System</h2>
-
     <input id="city" type="text" placeholder="Enter City Name">
     <button onclick="getWeather()">🔍 Get Recommendation</button>
-
     <pre id="output"></pre>
 </div>
 
+<!-- ==============================
+     SIMULATED JAVA LOGIC (PROTECTED)
+     ============================== -->
+<script type="text/java">
+/*
+public class WeatherAI {
+    public static String recommend(double temp, double humidity, double rain, double wind) {
+        StringBuilder rec = new StringBuilder();
+        if(temp >= 32) rec.append("• Light Cotton T-shirt + Shorts\n");
+        else if(temp >= 25) rec.append("• T-shirt + Jeans\n");
+        else if(temp >= 18) rec.append("• Light Jacket\n");
+        else rec.append("• Hoodie / Warm Clothes\n");
+
+        if(rain > 60) rec.append("• Carry Umbrella / Raincoat\n");
+        else if(rain > 30) rec.append("• Keep a Small Umbrella\n");
+
+        if(humidity > 75) rec.append("• Prefer Breathable Cotton\n");
+        if(wind > 25) rec.append("• Wear Windcheater\n");
+
+        rec.append(rain > 50 ? "• Shoes: Waterproof\n" : "• Shoes: Sneakers\n");
+        return rec.toString();
+    }
+
+    public static void main(String[] args) {
+        double temp=28, humidity=70, rain=40, wind=10;
+        System.out.println("--- AI Recommendation ---");
+        System.out.println(recommend(temp, humidity, rain, wind));
+    }
+}
+*/
+</script>
+
 <script>
-/* ========================================
-   API KEY
-========================================= */
 const API_KEY = "026f9e71bbd20786da6bcdc7329d256c";
 
-/* ========================================
-   AI RECOMMENDATION LOGIC
-========================================= */
 function recommend(temp, humidity, rain, wind) {
     let rec = "";
-
-    if (temp >= 32) rec += "• Light Cotton T-shirt + Shorts\n";
-    else if (temp >= 25) rec += "• T-shirt + Jeans\n";
-    else if (temp >= 18) rec += "• Light Jacket\n";
+    if(temp >= 32) rec += "• Light Cotton T-shirt + Shorts\n";
+    else if(temp >= 25) rec += "• T-shirt + Jeans\n";
+    else if(temp >= 18) rec += "• Light Jacket\n";
     else rec += "• Hoodie / Warm Clothes\n";
 
-    if (rain > 60) rec += "• Carry Umbrella / Raincoat\n";
-    else if (rain > 30) rec += "• Keep a Small Umbrella\n";
+    if(rain > 60) rec += "• Carry Umbrella / Raincoat\n";
+    else if(rain > 30) rec += "• Keep a Small Umbrella\n";
 
-    if (humidity > 75) rec += "• Prefer Breathable Cotton\n";
-    
-    if (wind > 25) rec += "• Wear Windcheater\n";
+    if(humidity > 75) rec += "• Prefer Breathable Cotton\n";
+    if(wind > 25) rec += "• Wear Windcheater\n";
 
     rec += (rain > 50) ? "• Shoes: Waterproof\n" : "• Shoes: Sneakers\n";
-
     return rec;
 }
 
-/* ========================================
-   MAIN WEATHER FETCH FUNCTION
-========================================= */
 async function getWeather() {
-
     let city = document.getElementById("city").value;
-
-    if (!city) {
-        alert("Enter a city name!");
-        return;
-    }
+    if(!city){ alert("Enter a city name!"); return; }
 
     document.getElementById("output").innerText = "Fetching...";
 
     try {
-        let currentURL =
-            `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`;
-
+        let currentURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`;
         let currentRes = await fetch(currentURL);
         let current = await currentRes.json();
-
-        if (!current.main) {
-            document.getElementById("output").innerText = "Invalid city!";
-            return;
-        }
+        if(!current.main){ document.getElementById("output").innerText="Invalid city!"; return; }
 
         let temp = current.main.temp;
         let humidity = current.main.humidity;
-        let wind = current.wind.speed * 3.6;
+        let wind = current.wind.speed*3.6;
 
-        let forecastURL =
-            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}`;
-
+        let forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${API_KEY}`;
         let forecastRes = await fetch(forecastURL);
         let forecast = await forecastRes.json();
-
-        let rainProb = forecast.list[0].pop * 100;
+        let rainProb = forecast.list[0].pop*100;
 
         let rec = recommend(temp, humidity, rainProb, wind);
 
         document.getElementById("output").innerText =
-            `City: ${city}\n` +
-            `Temperature: ${temp}°C\n` +
-            `Humidity: ${humidity}%\n` +
-            `Rain Probability: ${rainProb}%\n` +
-            `Wind: ${wind.toFixed(1)} km/h\n\n` +
-            `--- AI Recommendation ---\n` +
+            `City: ${city}\n`+
+            `Temperature: ${temp}°C\n`+
+            `Humidity: ${humidity}%\n`+
+            `Rain Probability: ${rainProb}%\n`+
+            `Wind: ${wind.toFixed(1)} km/h\n\n`+
+            `--- AI Recommendation ---\n`+
             rec;
 
-    } catch (e) {
+    } catch(e){
         document.getElementById("output").innerText = "Error fetching data!";
     }
 }
