@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI Weather Outfit Picker</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { box-sizing: border-box; }
+    html,body { height:100%; margin:0; font-family: 'Poppins', sans-serif; }
+
+    body {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      min-height:100vh;
+      color:#02313a;
+      background: linear-gradient(-45deg, #4facfe, #00f2fe, #43e97a, #fdfd96);
+      background-size: 400% 400%;
+      animation: gradientBG 16s ease infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::after{
+      content:"";
+      position:absolute;
+      top:0; left:0;
+      width:200%; height:100%;
+      background:url('https://i.ibb.co/4pDNDk1/clouds.png') repeat-x;
+      opacity:0.18;
+      animation: cloudMove 70s linear infinite;
+      z-index:0;
+    }
+
+    @keyframes gradientBG { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+    @keyframes cloudMove { 0%{transform:translateX(0)}100%{transform:translateX(-50%)} }
+
+    .card {
+      position:relative;
+      z-index:1;
+      width:100%;
+      max-width:720px;
+      background: rgba(255,255,255,0.22);
+      backdrop-filter: blur(12px);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.18);
+    }
+
+    h1 {
+      margin:0 0 6px 0;
+      font-size:20px;
+      color:#ffffff;
+      text-shadow:0 2px 4px rgba(0,0,0,0.2);
+      text-align:center;
+    }
+    .subtitle { font-size:12px; text-align:center; color:rgba(255,255,255,0.95); margin-bottom:12px; }
+
+    .input-row { display:flex; gap:8px; margin:10px 0; align-items:center; }
+    .input-row input {
+      flex:1; padding:10px; border-radius:10px; border:none; font-size:14px; outline:none; font-weight:500;
+    }
+    .input-row button{
+      padding:10px 12px; border-radius:10px; border:none; font-size:14px; font-weight:600; cursor:pointer;
+      background: linear-gradient(90deg,#ff758c,#ff7eb3); color:#fff;
+    }
+
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+    @media(max-width:700px){ .grid{ grid-template-columns:1fr; } }
+
+    .panel {
+      background: rgba(255,255,255,0.92);
+      border-radius:14px;
+      padding:14px;
+      min-height:150px;
+    }
+
+    .temp { font-size:34px; font-weight:600; color:#02313a; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+    .chip { background: rgba(4,58,71,0.08); padding:4px 7px; border-radius:999px; font-size:11px; font-weight:500; }
+
+    pre {
+      background:#f6fbfc;
+      padding:10px;
+      border-radius:10px;
+      white-space:pre-wrap;
+      font-size:13px;
+      color:#022f38;
+      margin:0;
+    }
+
+    .bottom-row { display:flex; align-items:center; margin-top:10px; gap:10px; }
+    .avatar {
+      width:65px; height:65px; border-radius:15px; background:white;
+      display:flex; align-items:center; justify-content:center; font-size:32px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* small header container above everything (top area) */
+    #containerTop {
+      max-width:620px;
+      margin:0 auto 6px auto;
+      text-align:center;
+    }
+    #outputRaw { display:none; } /* internal debug area; hidden by default */
+
+  </style>
+</head>
+<body>
+
+  <div class="card" role="main">
+    <div id="containerTop">
+      <h1>AI WEATHER-BASED CLOTHES RECOMMENDATION SYSTEM 🌦️</h1>
+      <div class="subtitle">Your style guide — powered by real weather.</div>
+    </div>
+
+    <div class="input-row" aria-label="search row">
+      <input id="cityInput" type="text" placeholder="Enter city (e.g. Dubai)" autocomplete="off" />
+      <button id="btnGet">Get Recommendation</button>
+    </div>
+
+    <div class="grid" role="region" aria-label="results grid">
+      <!-- Weather Panel -->
+      <div class="panel" id="weatherPanel">
+        <div id="cityName">City: —</div>
+        <div id="timeLocal" style="font-size:12px;color:#3a6b72;margin-bottom:6px;">Local time: —</div>
+
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div>
+            <div class="temp" id="temp">--°C</div>
+            <div style="font-size:12px;color:#396872" id="feels">Feels: —°C</div>
+          </div>
+          <div style="text-align:right;">
+            <div id="desc" style="text-transform:capitalize;font-size:13px;">—</div>
+            <div style="font-size:12px;color:#396872" id="comfort">Comfort: —</div>
+          </div>
+        </div>
+
+        <div class="chips" id="chips"></div>
+        <div id="mood" style="margin-top:8px;font-size:12px;color:#21545c;">Weather mood will appear here.</div>
+      </div>
+
+      <!-- Outfit Panel -->
+      <div class="panel" id="outfitPanel">
+        <div style="font-weight:600;margin-bottom:6px;">🎯 Outfit Recommendation</div>
+
+        <pre id="recBox">No data yet. Search a city.</pre>
+
+        <div class="bottom-row">
+          <div class="avatar" id="avatar">👕</div>
+          <div>
+            <div style="font-size:13px;" id="outfitText">—</div>
+            <div style="font-size:11px;color:#2c5b63;" id="funFact">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- small raw output for debugging (hidden) -->
+    <pre id="outputRaw" aria-hidden="true"></pre>
+  </div>
+
+  <script>
+    // ---------- CONFIG ----------
+    const API_KEY = "026f9e71bbd20786da6bcdc7329d256c"; // YOUR KEY (visible in browser)
+    // ----------------------------
+
+    // DOM elements
+    const cityInput = document.getElementById('cityInput');
+    const btnGet = document.getElementById('btnGet');
+    const cityNameEl = document.getElementById('cityName');
+    const timeLocalEl = document.getElementById('timeLocal');
+    const tempEl = document.getElementById('temp');
+    const feelsEl = document.getElementById('feels');
+    const descEl = document.getElementById('desc');
+    const comfortEl = document.getElementById('comfort');
+    const chipsEl = document.getElementById('chips');
+    const moodEl = document.getElementById('mood');
+    const recBox = document.getElementById('recBox');
+    const avatarEl = document.getElementById('avatar');
+    const outfitTextEl = document.getElementById('outfitText');
+    const funFactEl = document.getElementById('funFact');
+    const outputRaw = document.getElementById('outputRaw');
+
+    // Helpers
+    function comfortLevel(feels, humidity){
+      if (feels >= 34) return "Very hot";
+      if (feels >= 27) return humidity > 70 ? "Humid hot" : "Warm";
+      if (feels >= 20) return "Comfortable";
+      if (feels >= 12) return "Cool";
+      return "Cold";
+    }
+
+    function moodLine(feels, humidity, rain){
+      if (rain >= 70) return "Rainy mood ☔ — soft layers feel nice today.";
+      if (feels >= 32) return "Spicy heat 🥵 — keep clothes ultra-light.";
+      if (feels >= 22) return "Easy warm day 😎 — relaxed casual fits.";
+      if (feels < 10) return "Cold & crisp ❄️ — layering time!";
+      return "Balanced vibes 🌈 — dress as you like.";
+    }
+
+    function pickAvatar(feels){
+      if (feels >= 32) return "👕🩳";
+      if (feels >= 25) return "👕👖";
+      if (feels >= 18) return "🧥👖";
+      if (feels >= 10) return "🧥🧣";
+      return "🧥🧤";
+    }
+
+    function funFact(temp, humidity, rain){
+      if (humidity > 80 && temp > 25) return "Humidity slows sweat evaporation — makes it feel hotter.";
+      if (temp < 8) return "Layering traps warm air — better than one thick jacket.";
+      if (rain > 60) return "Dark clouds increase infrared radiation — air cools faster.";
+      return "Lighter colors reflect heat — great for sunny days.";
+    }
+
+    // Single recommend function — returns a string
+    function recommendByValues(temp, feels, humidity, rain, wind){
+      const t = Math.round(feels);
+      let rec = [];
+
+      if (t >= 32) rec.push("• Ultra-light cotton/linen. Shorts recommended.");
+      else if (t >= 25) rec.push("• T-shirt + light pants.");
+      else if (t >= 18) rec.push("• Tee/shirt + light jacket.");
+      else if (t >= 10) rec.push("• Sweater + jacket.");
+      else rec.push("• Thermal + heavy jacket, scarf & gloves.");
+
+      if (rain >= 60) rec.push("• Rain likely — bring umbrella or raincoat.");
+      else if (rain >= 30) rec.push("• Might drizzle — keep a small umbrella.");
+
+      if (humidity >= 80) rec.push("• Humid — choose breathable fabrics.");
+      if (wind >= 35) rec.push("• Windy — windproof jacket helps.");
+      if (wind >= 20 && wind < 35) rec.push("• Moderate wind — consider a light windproof layer.");
+
+      rec.push(`• Shoes: ${rain > 50 ? "Waterproof" : "Normal sneakers"}.`);
+
+      return rec.join("\n");
+    }
+
+    // Utility: safe fetch current + forecast (handles basic errors)
+    async function fetchWeatherData(city) {
+      const encoded = encodeURIComponent(city);
+      const currentURL = `https://api.openweathermap.org/data/2.5/weather?q=${encoded}&units=metric&appid=${API_KEY}`;
+      const forecastURL = `https://api.openweathermap.org/data/2.5/forecast?q=${encoded}&units=metric&appid=${API_KEY}`;
+
+      const [curRes, foreRes] = await Promise.all([
+        fetch(currentURL),
+        fetch(forecastURL).catch(() => null)
+      ]);
+
+      if (!curRes.ok) {
+        const err = await curRes.json().catch(()=>({message:"Unknown"}));
+        throw new Error(err.message || 'City not found');
+      }
+      const cur = await curRes.json();
+      let fore = null;
+      if (foreRes && foreRes.ok) fore = await foreRes.json();
+      return { cur, fore };
+    }
+
+    // Main function
+    async function getWeather(){
+      const city = cityInput.value.trim();
+      if (!city) return alert("Enter a city name.");
+
+      // UI: loading
+      btnGet.disabled = true;
+      btnGet.textContent = "Loading...";
+      recBox.textContent = "Loading recommendations...";
+      outputRaw.textContent = "";
+
+      try {
+        const { cur, fore } = await fetchWeatherData(city);
+
+        // compute values
+        const temp = Number(cur.main.temp);
+        const feels = Number(cur.main.feels_like);
+        const humidity = Number(cur.main.humidity);
+        const wind = Number(cur.wind?.speed || 0) * 3.6; // m/s -> km/h
+        let rainProb = 0;
+
+        // Forecast POP if available
+        if (fore && Array.isArray(fore.list) && fore.list.length > 0) {
+          // use first slot probability of precipitation (pop)
+          const first = fore.list[0];
+          rainProb = Math.round((first.pop || 0) * 100);
+        } else {
+          // fallback: if current has rain object, assume high chance
+          if (cur.rain) rainProb = 80;
+        }
+
+        // UI updates
+        cityNameEl.innerText = `City: ${cur.name}${cur.sys && cur.sys.country ? ", " + cur.sys.country : ""}`;
+        timeLocalEl.innerText = "Local time: " + new Date().toLocaleString();
+        tempEl.innerText = `${Math.round(temp)}°C`;
+        feelsEl.innerText = `Feels: ${Math.round(feels)}°C`;
+        descEl.innerText = cur.weather && cur.weather[0] && cur.weather[0].description ? cur.weather[0].description : "—";
+
+        comfortEl.innerText = "Comfort: " + comfortLevel(feels, humidity);
+        moodEl.innerText = moodLine(feels, humidity, rainProb);
+
+        // chips
+        chipsEl.innerHTML = "";
+        ["Humidity: " + humidity + "%", "Rain: " + rainProb + "%", "Wind: " + wind.toFixed(1) + " km/h", "Pressure: " + (cur.main.pressure || "—") + " hPa"].forEach(c => {
+          const d = document.createElement('div');
+          d.className = "chip";
+          d.innerText = c;
+          chipsEl.appendChild(d);
+        });
+
+        // recommendations
+        const recText = recommendByValues(temp, feels, humidity, rainProb, wind);
+        recBox.innerText =
+`Temp: ${temp.toFixed(1)}°C (feels ${feels.toFixed(1)}°C)
+Weather: ${cur.weather && cur.weather[0] ? cur.weather[0].main : "—"}
+Rain: ${rainProb}%
+Wind: ${wind.toFixed(1)} km/h
+
+--- AI Recommendation ---
+${recText}`;
+
+        avatarEl.innerText = pickAvatar(feels);
+        outfitTextEl.innerText = comfortLevel(feels, humidity) + (rainProb > 40 ? " · Carry rain gear." : " · Clear skies vibe.");
+        funFactEl.innerText = funFact(temp, humidity, rainProb);
+
+        // raw (hidden) debug
+        outputRaw.textContent = JSON.stringify({ cur, fore }, null, 2);
+
+      } catch (err) {
+        recBox.innerText = "Error: " + (err && err.message ? err.message : "Could not fetch weather.");
+        cityNameEl.innerText = "City: —";
+        tempEl.innerText = "--°C";
+        feelsEl.innerText = "Feels: —°C";
+        descEl.innerText = "—";
+        chipsEl.innerHTML = "";
+        moodEl.innerText = "—";
+        avatarEl.innerText = "👕";
+        outfitTextEl.innerText = "—";
+        funFactEl.innerText = "—";
+      } finally {
+        btnGet.disabled = false;
+        btnGet.textContent = "Get Recommendation";
+      }
+    }
+
+    // event listeners
+    btnGet.addEventListener('click', getWeather);
+    cityInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') getWeather(); });
+
+  </script>
+
+</body>
+</html>
